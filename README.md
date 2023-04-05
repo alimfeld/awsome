@@ -1,0 +1,2 @@
+# awsome
+awesome AWS commander
