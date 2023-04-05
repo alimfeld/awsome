@@ -1,22 +1,19 @@
 package branches
 
 import (
-	"awsome/core"
-
 	"github.com/aws/aws-sdk-go-v2/service/codecommit"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit/types"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/samber/lo"
 )
 
-func New(client *codecommit.Client, context Context, size core.Size) model {
-	list := list.New([]list.Item{}, list.NewDefaultDelegate(), size.Width, size.Height)
+func New(client *codecommit.Client, context Context) model {
+	list := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	list.Title = "Branches"
 	list.DisableQuitKeybindings()
 	return model{
 		client:  client,
 		context: context,
-		size:    size,
 		list:    list,
 	}
 }
@@ -28,7 +25,6 @@ type Context struct {
 type model struct {
 	client  *codecommit.Client
 	context Context
-	size    core.Size
 	list    list.Model
 }
 

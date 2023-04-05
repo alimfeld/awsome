@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"awsome/core"
-
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -20,14 +18,11 @@ func Styles() styles {
 	}
 }
 
-func (s styles) bodySize(windowSize core.Size) core.Size {
+func (s styles) bodySize(windowWidth, windowHeight int) (int, int) {
 	hv := s.header.GetVerticalFrameSize()
 	bh, bv := s.body.GetFrameSize()
 	fv := s.footer.GetVerticalFrameSize()
-	return core.Size{
-		Width:  windowSize.Width - bh,
-		Height: windowSize.Height - hv - bv - fv - 2,
-	}
+	return windowWidth - bh, windowHeight - hv - bv - fv - 2
 }
 
 func (s styles) resizeStyles(width int) styles {

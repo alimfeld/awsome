@@ -31,8 +31,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case core.BodySizeMsg:
-		m.size = msg.Size
-		m.list.SetSize(msg.Size.Width, msg.Size.Height)
+		m.list.SetSize(msg.Width, msg.Height)
 		return m, nil
 	case tea.KeyMsg:
 		if m.list.FilterState() != list.Filtering {
@@ -44,7 +43,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					pr.New(m.client, pr.Context{
 						Repository:  m.context.Repository,
 						PullRequest: m.pr(),
-					}, m.size),
+					}),
 					*m.pr().PullRequestId,
 				)
 			}

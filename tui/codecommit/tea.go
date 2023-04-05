@@ -8,7 +8,7 @@ import (
 )
 
 func (m model) Init() tea.Cmd {
-	return core.PushModelCmd(repos.New(m.client, m.size), "Repositories")
+	return core.PushModelCmd(repos.New(m.client), "Repositories")
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

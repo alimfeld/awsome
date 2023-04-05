@@ -25,12 +25,12 @@ func PopModelCmd() tea.Cmd {
 type PopModelMsg struct {
 }
 
-func BodySizeCmd(size Size) tea.Cmd {
+func BodySizeCmd(width, height int) tea.Cmd {
 	return func() tea.Msg {
-		return BodySizeMsg{size}
+		return BodySizeMsg{Width: width, Height: height}
 	}
 }
 
 type BodySizeMsg struct {
-	Size Size
+	Width, Height int
 }

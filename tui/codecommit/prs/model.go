@@ -1,7 +1,6 @@
 package prs
 
 import (
-	"awsome/core"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/codecommit"
@@ -10,14 +9,13 @@ import (
 	"github.com/samber/lo"
 )
 
-func New(client *codecommit.Client, context Context, size core.Size) model {
-	list := list.New([]list.Item{}, list.NewDefaultDelegate(), size.Width, size.Height)
+func New(client *codecommit.Client, context Context) model {
+	list := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	list.Title = "PRs"
 	list.DisableQuitKeybindings()
 	m := model{
 		client:  client,
 		context: context,
-		size:    size,
 		prs:     make(map[string]types.PullRequest),
 		list:    list,
 	}
@@ -31,7 +29,6 @@ type Context struct {
 type model struct {
 	client  *codecommit.Client
 	context Context
-	size    core.Size
 	prIds   []string
 	prs     map[string]types.PullRequest
 	list    list.Model

@@ -1,21 +1,18 @@
 package repos
 
 import (
-	"awsome/core"
-
 	"github.com/aws/aws-sdk-go-v2/service/codecommit"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit/types"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/samber/lo"
 )
 
-func New(client *codecommit.Client, size core.Size) model {
-	list := list.New([]list.Item{}, list.NewDefaultDelegate(), size.Width, size.Height)
+func New(client *codecommit.Client) model {
+	list := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	list.Title = "Repositories"
 	list.DisableQuitKeybindings()
 	m := model{
 		client: client,
-		size:   size,
 		repos:  make(map[string]types.RepositoryMetadata),
 		list:   list,
 	}
@@ -23,9 +20,7 @@ func New(client *codecommit.Client, size core.Size) model {
 }
 
 type model struct {
-	client *codecommit.Client
-	size   core.Size
-
+	client   *codecommit.Client
 	repoNips []types.RepositoryNameIdPair
 	repos    map[string]types.RepositoryMetadata
 	list     list.Model

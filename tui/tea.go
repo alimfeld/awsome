@@ -10,9 +10,7 @@ import (
 )
 
 func (m model) Init() tea.Cmd {
-	return core.PushModelCmd(
-		codecommit.New(m.cfg, m.bodySize),
-		"CodeCommit")
+	return core.PushModelCmd(codecommit.New(m.cfg), "CodeCommit")
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -26,7 +24,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case core.PushModelMsg:
 		m.models = m.models.push(msg.Model, msg.Breadcrumb)
-		return m, msg.Model.Init()
+		return m, tea.Batch(
+			msg.Model.Init(),
+			core.BodySizeCmd(m.bodyWidth, m.bodyHeight),
+		)
 
 	case core.PopModelMsg:
 		m.models = m.models.pop()
@@ -34,8 +35,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		m.styles = m.styles.resizeStyles(msg.Width)
-		m.bodySize = m.styles.bodySize(core.Size{Width: msg.Width, Height: msg.Height})
-		return m, core.BodySizeCmd(m.bodySize)
+		m.bodyWidth, m.bodyHeight = m.styles.bodySize(msg.Width, msg.Height)
+		return m, core.BodySizeCmd(m.bodyWidth, m.bodyHeight)
 
 	case tea.KeyMsg:
 		switch msg.String() {

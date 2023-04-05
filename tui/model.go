@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"awsome/core"
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -22,11 +21,12 @@ func New() (model, error) {
 }
 
 type model struct {
-	cfg      aws.Config
-	bodySize core.Size
-	styles   styles
-	models   stack
-	status   string
+	cfg        aws.Config
+	styles     styles
+	models     stack
+	status     string
+	bodyWidth  int
+	bodyHeight int
 }
 
 type stack struct {
