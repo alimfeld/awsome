@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"awsome/core"
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -9,13 +10,23 @@ import (
 	"github.com/samber/lo"
 )
 
+func New() (model, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return model{}, err
+	}
+	return model{
+		cfg:    cfg,
+		styles: Styles(),
+	}, nil
+}
+
 type model struct {
-	cfg        aws.Config
-	styles     styles
-	models     stack
-	status     string
-	bodyWidth  int
-	bodyHeight int
+	cfg      aws.Config
+	bodySize core.Size
+	styles   styles
+	models   stack
+	status   string
 }
 
 type stack struct {
@@ -59,15 +70,4 @@ func (s stack) breadcrumbs() []string {
 	return lo.Map(s.items, func(i item, _ int) string {
 		return i.breadcrumb
 	})
-}
-
-func New() (model, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return model{}, err
-	}
-	return model{
-		cfg:    cfg,
-		styles: Styles(),
-	}, nil
 }

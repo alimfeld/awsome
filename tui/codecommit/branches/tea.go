@@ -1,33 +1,30 @@
 package branches
 
 import (
-	"awsome/bubbles"
+	"awsome/core"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/samber/lo"
 )
 
 func (m model) Init() tea.Cmd {
-	return loadCmd(m.client, m.repo.RepositoryName)
+	return loadCmd(m.client, m.context.Repository.RepositoryName)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case loadedMsg:
-		cmd := m.list.SetItems(lo.Map(msg.branches, func(b string, _ int) list.Item {
-			return newItem(m.repo, b)
-		}))
+		cmd := m.list.SetItems(m.items(msg.branches))
 		return m, cmd
-	case bubbles.BodySizeMsg:
-		m.width, m.height = msg.Width, msg.Height
-		m.list.SetSize(msg.Width, msg.Height)
+	case core.BodySizeMsg:
+		m.size = msg.Size
+		m.list.SetSize(msg.Size.Width, msg.Size.Height)
 		return m, nil
 	case tea.KeyMsg:
 		if m.list.FilterState() != list.Filtering {
 			switch msg.String() {
 			case "esc":
-				return m, bubbles.PopModelCmd()
+				return m, core.PopModelCmd()
 			}
 		}
 	}

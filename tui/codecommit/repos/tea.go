@@ -1,7 +1,7 @@
 package repos
 
 import (
-	"awsome/bubbles"
+	"awsome/core"
 	"awsome/tui/codecommit/branches"
 	"awsome/tui/codecommit/prs"
 
@@ -25,31 +25,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.repos[*r.RepositoryName] = r
 		})
 		if len(m.repoNips) == len(m.repos) {
-			cmd := m.list.SetItems(lo.Map(
-				m.repoNips,
-				func(repoNip types.RepositoryNameIdPair, _ int) list.Item {
-					return item{repo: m.repos[*repoNip.RepositoryName]}
-				}))
+			cmd := m.list.SetItems(m.items())
 			m.list.StopSpinner()
 			return m, cmd
 		}
 		return m, nil
-	case bubbles.BodySizeMsg:
-		m.width, m.height = msg.Width, msg.Height
-		m.list.SetSize(msg.Width, msg.Height)
+	case core.BodySizeMsg:
+		m.size = msg.Size
+		m.list.SetSize(msg.Size.Width, msg.Size.Height)
 		return m, nil
 	case tea.KeyMsg:
 		if m.list.FilterState() != list.Filtering {
 			switch msg.String() {
 			case "b":
-				repo := m.list.SelectedItem().(item).repo
-				return m, bubbles.PushModelCmd(
-					branches.New(m.client, repo, m.width, m.height),
+				repo := m.repo()
+				return m, core.PushModelCmd(
+					branches.New(
+						m.client,
+						branches.Context{Repository: m.repo()},
+						m.size,
+					),
 					*repo.RepositoryName)
 			case "p":
-				repoName := m.list.SelectedItem().(item).repo.RepositoryName
-				return m, bubbles.PushModelCmd(
-					prs.New(m.client, repoName, m.width, m.height),
+				repoName := m.repo().RepositoryName
+				return m, core.PushModelCmd(
+					prs.New(
+						m.client,
+						prs.Context{Repository: m.repo()},
+						m.size,
+					),
 					*repoName)
 			}
 		}

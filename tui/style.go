@@ -1,6 +1,10 @@
 package tui
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"awsome/core"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 type styles struct {
 	header lipgloss.Style
@@ -16,11 +20,14 @@ func Styles() styles {
 	}
 }
 
-func (s styles) bodySize(width, height int) (int, int) {
+func (s styles) bodySize(windowSize core.Size) core.Size {
 	hv := s.header.GetVerticalFrameSize()
 	bh, bv := s.body.GetFrameSize()
 	fv := s.footer.GetVerticalFrameSize()
-	return width - bh, height - hv - bv - fv - 2
+	return core.Size{
+		Width:  windowSize.Width - bh,
+		Height: windowSize.Height - hv - bv - fv - 2,
+	}
 }
 
 func (s styles) resizeStyles(width int) styles {

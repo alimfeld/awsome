@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"awsome/bubbles"
+	"awsome/core"
 	"awsome/tui/codecommit"
 	"strings"
 
@@ -10,8 +10,8 @@ import (
 )
 
 func (m model) Init() tea.Cmd {
-	return bubbles.PushModelCmd(
-		codecommit.New(m.cfg, m.bodyWidth, m.bodyHeight),
+	return core.PushModelCmd(
+		codecommit.New(m.cfg, m.bodySize),
 		"CodeCommit")
 }
 
@@ -24,18 +24,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.status = msg.Error()
 		return m, nil
 
-	case bubbles.PushModelMsg:
+	case core.PushModelMsg:
 		m.models = m.models.push(msg.Model, msg.Breadcrumb)
 		return m, msg.Model.Init()
 
-	case bubbles.PopModelMsg:
+	case core.PopModelMsg:
 		m.models = m.models.pop()
 		return m, nil
 
 	case tea.WindowSizeMsg:
 		m.styles = m.styles.resizeStyles(msg.Width)
-		m.bodyWidth, m.bodyHeight = m.styles.bodySize(msg.Width, msg.Height)
-		return m, bubbles.BodySizeCmd(m.bodyWidth, m.bodyHeight)
+		m.bodySize = m.styles.bodySize(core.Size{Width: msg.Width, Height: msg.Height})
+		return m, core.BodySizeCmd(m.bodySize)
 
 	case tea.KeyMsg:
 		switch msg.String() {

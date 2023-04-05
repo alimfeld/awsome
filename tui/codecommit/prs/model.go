@@ -1,35 +1,50 @@
 package prs
 
 import (
+	"awsome/core"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/codecommit"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit/types"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/samber/lo"
 )
 
-func New(client *codecommit.Client, repoName *string, width, height int) model {
-	list := list.New([]list.Item{}, list.NewDefaultDelegate(), width, height)
+func New(client *codecommit.Client, context Context, size core.Size) model {
+	list := list.New([]list.Item{}, list.NewDefaultDelegate(), size.Width, size.Height)
 	list.Title = "PRs"
 	list.DisableQuitKeybindings()
 	m := model{
-		client:   client,
-		list:     list,
-		repoName: repoName,
-		prs:      make(map[string]types.PullRequest),
-		width:    width,
-		height:   height,
+		client:  client,
+		context: context,
+		size:    size,
+		prs:     make(map[string]types.PullRequest),
+		list:    list,
 	}
 	return m
 }
 
+type Context struct {
+	Repository types.RepositoryMetadata
+}
+
 type model struct {
-	client        *codecommit.Client
-	list          list.Model
-	repoName      *string
-	prIds         []string
-	prs           map[string]types.PullRequest
-	width, height int
+	client  *codecommit.Client
+	context Context
+	size    core.Size
+	prIds   []string
+	prs     map[string]types.PullRequest
+	list    list.Model
+}
+
+func (m model) pr() types.PullRequest {
+	return m.list.SelectedItem().(item).pr
+}
+
+func (m model) items() []list.Item {
+	return lo.Map(m.prIds, func(prId string, _ int) list.Item {
+		return item{pr: m.prs[prId]}
+	})
 }
 
 type item struct {

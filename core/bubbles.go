@@ -1,4 +1,4 @@
-package bubbles
+package core
 
 import tea "github.com/charmbracelet/bubbletea"
 
@@ -25,12 +25,12 @@ func PopModelCmd() tea.Cmd {
 type PopModelMsg struct {
 }
 
-func BodySizeCmd(width, height int) tea.Cmd {
+func BodySizeCmd(size Size) tea.Cmd {
 	return func() tea.Msg {
-		return BodySizeMsg{Width: width, Height: height}
+		return BodySizeMsg{size}
 	}
 }
 
 type BodySizeMsg struct {
-	Width, Height int
+	Size Size
 }
