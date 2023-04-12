@@ -2,7 +2,7 @@ package tui
 
 import (
 	"awsome/core"
-	"awsome/tui/codecommit"
+	"awsome/tui/services"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -10,7 +10,7 @@ import (
 )
 
 func (m model) Init() tea.Cmd {
-	return core.PushModelCmd(codecommit.New(m.cfg), "CodeCommit")
+	return core.PushModelCmd(services.New(m.cfg), "awsome")
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -31,7 +31,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case core.PopModelMsg:
 		m.models = m.models.pop()
-		return m, nil
+		return m, core.BodySizeCmd(m.bodyWidth, m.bodyHeight)
 
 	case tea.WindowSizeMsg:
 		m.styles = m.styles.resizeStyles(msg.Width)
