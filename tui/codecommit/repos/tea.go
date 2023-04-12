@@ -36,6 +36,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if m.list.FilterState() != list.Filtering {
 			switch msg.String() {
+			case "esc":
+				return m, core.PopModelCmd()
 			case "b":
 				repo := m.repo()
 				return m, core.PushModelCmd(
