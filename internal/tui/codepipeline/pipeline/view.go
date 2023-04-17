@@ -1,31 +1,43 @@
 package pipeline
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/codepipeline/types"
-	"github.com/charmbracelet/lipgloss"
+	"fmt"
+	"strings"
+
 	"github.com/samber/lo"
 )
 
 func (m model) View() string {
-	return lipgloss.JoinVertical(lipgloss.Position(lipgloss.Center),
-		lo.Map(m.pipeline.Stages,
-			func(stage types.StageDeclaration, _ int) string {
-				actions := lo.Map(stage.Actions,
-					func(action types.ActionDeclaration, _ int) string {
-						return lipgloss.
-							NewStyle().
-							Border(lipgloss.RoundedBorder(), true).
-							Render(*action.Name)
-					})
+	if m.pipeline == nil {
+		return "loading..."
+	}
 
-				return lipgloss.
-					NewStyle().
-					Border(lipgloss.NormalBorder(), true).
-					Render(
-						lipgloss.JoinVertical(lipgloss.Center,
-							append([]string{*stage.Name}, actions...)...,
+	var sb strings.Builder
+
+	lo.ForEach(
+		m.pipeline.stages,
+		func(s stage, _ int) {
+			sb.WriteString(fmt.Sprintf("\n# %s\n", s.name))
+			lo.ForEach(
+				s.groups,
+				func(g group, _ int) {
+					sb.WriteString(
+						fmt.Sprintf("\n%s\n",
+							strings.Join(
+								lo.Map(
+									g.actions,
+									func(a action, _ int) string {
+										return a.name
+									},
+								),
+								"\n",
+							),
 						),
 					)
-			},
-		)...)
+				},
+			)
+		},
+	)
+
+	return sb.String()
 }

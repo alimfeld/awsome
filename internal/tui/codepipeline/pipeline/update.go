@@ -9,7 +9,10 @@ import (
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case pipelineMsg:
-		m.pipeline = msg.pipeline
+		m.setPipeline(*msg.payload)
+		return m, nil
+	case pipelineExecutionMsg:
+		m.execution = msg.payload
 		return m, nil
 	case core.BodySizeMsg:
 		return m, nil
