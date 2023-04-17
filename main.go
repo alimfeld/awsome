@@ -1,7 +1,7 @@
 package main
 
 import (
-	"awsome/tui"
+	"awsome/internal/tui"
 	"log"
 
 	tea "github.com/charmbracelet/bubbletea"

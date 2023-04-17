@@ -1,8 +1,8 @@
 package tui
 
 import (
-	"awsome/core"
-	"awsome/tui/services"
+	"awsome/internal/core"
+	"awsome/internal/tui/services"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"

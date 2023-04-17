@@ -1,7 +1,7 @@
 package pipeline
 
 import (
-	"awsome/core"
+	"awsome/internal/core"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

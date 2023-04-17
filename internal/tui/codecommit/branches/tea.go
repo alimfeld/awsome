@@ -1,7 +1,7 @@
 package branches
 
 import (
-	"awsome/core"
+	"awsome/internal/core"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"

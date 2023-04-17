@@ -1,7 +1,7 @@
 package pr
 
 import (
-	"awsome/core"
+	"awsome/internal/core"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/codecommit/types"

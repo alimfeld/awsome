@@ -1,9 +1,9 @@
 package repos
 
 import (
-	"awsome/core"
-	"awsome/tui/codecommit/branches"
-	"awsome/tui/codecommit/prs"
+	"awsome/internal/core"
+	"awsome/internal/tui/codecommit/branches"
+	"awsome/internal/tui/codecommit/prs"
 
 	"github.com/aws/aws-sdk-go-v2/service/codecommit/types"
 	"github.com/charmbracelet/bubbles/list"

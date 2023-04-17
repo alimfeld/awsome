@@ -1,8 +1,8 @@
 package pipelines
 
 import (
-	"awsome/core"
-	"awsome/tui/codepipeline/pipeline"
+	"awsome/internal/core"
+	"awsome/internal/tui/codepipeline/pipeline"
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline"

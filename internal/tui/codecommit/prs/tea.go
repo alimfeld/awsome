@@ -1,8 +1,8 @@
 package prs
 
 import (
-	"awsome/core"
-	"awsome/tui/codecommit/pr"
+	"awsome/internal/core"
+	"awsome/internal/tui/codecommit/pr"
 
 	"github.com/aws/aws-sdk-go-v2/service/codecommit/types"
 	"github.com/charmbracelet/bubbles/list"
