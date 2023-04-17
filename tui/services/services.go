@@ -3,7 +3,7 @@ package services
 import (
 	"awsome/core"
 	"awsome/tui/codecommit/repos"
-	"awsome/tui/pipelines"
+	"awsome/tui/codepipeline/pipelines"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/codecommit"

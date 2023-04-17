@@ -2,6 +2,7 @@ package pipelines
 
 import (
 	"awsome/core"
+	"awsome/tui/codepipeline/pipeline"
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline"
@@ -26,6 +27,10 @@ type model struct {
 	client    *codepipeline.Client
 	pipelines []types.PipelineSummary
 	list      list.Model
+}
+
+func (m model) pipeline() types.PipelineSummary {
+	return m.list.SelectedItem().(item).pipeline
 }
 
 func (m model) createItems() []list.Item {
@@ -80,6 +85,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "esc":
 				return m, core.PopModelCmd()
+			case "enter":
+				p := m.pipeline()
+				return m, core.PushModelCmd(pipeline.New(m.client, pipeline.Context{Pipeline: p}), *p.Name)
 			}
 		}
 	}
