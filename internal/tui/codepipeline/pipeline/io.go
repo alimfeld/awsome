@@ -77,3 +77,24 @@ type pipelineExecutionMsg struct {
 	summary *types.PipelineExecutionSummary
 	actions map[string]types.ActionExecutionDetail
 }
+
+func startPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cmd {
+	return func() tea.Msg {
+		output, err := client.StartPipelineExecution(
+			context.TODO(),
+			&codepipeline.StartPipelineExecutionInput{
+				Name: name,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		return pipelineStartMsg{
+			id: output.PipelineExecutionId,
+		}
+	}
+}
+
+type pipelineStartMsg struct {
+	id *string
+}

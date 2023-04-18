@@ -2,10 +2,8 @@ package pipeline
 
 import (
 	"awsome/internal/core"
-	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/service/codepipeline"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -35,13 +33,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			return m, core.PopModelCmd()
 		case "r":
-			m.client.StartPipelineExecution(
-				context.TODO(),
-				&codepipeline.StartPipelineExecutionInput{
-					Name: m.context.Pipeline.Name,
-				},
+			return m, startPipelineExecutionCmd(
+				m.client,
+				m.context.Pipeline.Name,
 			)
-			return m, nil
 		}
 	}
 	return m, nil
