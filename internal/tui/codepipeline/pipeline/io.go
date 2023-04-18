@@ -44,7 +44,9 @@ func getPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cmd 
 		}
 
 		if len(pipelineExeuctions.PipelineExecutionSummaries) == 0 {
-			return pipelineExecutionMsg{}
+			return pipelineExecutionMsg{
+				name: name,
+			}
 		}
 
 		summary := &pipelineExeuctions.PipelineExecutionSummaries[0]
@@ -62,6 +64,7 @@ func getPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cmd 
 		}
 
 		return pipelineExecutionMsg{
+			name:    name,
 			summary: summary,
 			actions: lo.KeyBy(
 				actionExecutions.ActionExecutionDetails,
@@ -74,6 +77,7 @@ func getPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cmd 
 }
 
 type pipelineExecutionMsg struct {
+	name    *string
 	summary *types.PipelineExecutionSummary
 	actions map[string]types.ActionExecutionDetail
 }

@@ -13,6 +13,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.setPipeline(*msg.payload)
 		return m, nil
 	case pipelineExecutionMsg:
+		if msg.name != m.context.Pipeline.Name {
+			// the msg doesn't target this pipeline
+			return m, nil
+		}
 		m.execution = execution{
 			msg.summary,
 			msg.actions,
