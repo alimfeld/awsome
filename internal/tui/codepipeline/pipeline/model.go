@@ -20,11 +20,35 @@ type model struct {
 	client  *codepipeline.Client
 	context Context
 	*pipeline
-	execution *types.PipelineExecutionSummary
+	execution
 }
 
 type Context struct {
 	Pipeline types.PipelineSummary
+}
+
+type pipeline struct {
+	name   string
+	stages []stage
+}
+
+type stage struct {
+	name   string
+	groups []group
+}
+
+type group struct {
+	order   int
+	actions []action
+}
+
+type action struct {
+	name string
+}
+
+type execution struct {
+	summary *types.PipelineExecutionSummary
+	actions map[string]types.ActionExecutionDetail
 }
 
 func (m *model) setPipeline(p types.PipelineDeclaration) {
@@ -65,23 +89,4 @@ func (m *model) setPipeline(p types.PipelineDeclaration) {
 			},
 		),
 	}
-}
-
-type pipeline struct {
-	name   string
-	stages []stage
-}
-
-type stage struct {
-	name   string
-	groups []group
-}
-
-type group struct {
-	order   int
-	actions []action
-}
-
-type action struct {
-	name string
 }

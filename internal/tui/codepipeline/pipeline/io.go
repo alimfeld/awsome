@@ -9,12 +9,12 @@ import (
 	"github.com/samber/lo"
 )
 
-func getPipelineCmd(client codepipeline.Client, name string) tea.Cmd {
+func getPipelineCmd(client *codepipeline.Client, name *string) tea.Cmd {
 	return func() tea.Msg {
 		output, err := client.GetPipeline(
 			context.TODO(),
 			&codepipeline.GetPipelineInput{
-				Name: &name,
+				Name: name,
 			})
 		if err != nil {
 			return err
@@ -29,27 +29,51 @@ type pipelineMsg struct {
 	payload *types.PipelineDeclaration
 }
 
-func getPipelineExecutionCmd(client codepipeline.Client, name string) tea.Cmd {
+func getPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cmd {
 	return func() tea.Msg {
-		output, err := client.ListPipelineExecutions(
+
+		pipelineExeuctions, err := client.ListPipelineExecutions(
 			context.TODO(),
 			&codepipeline.ListPipelineExecutionsInput{
-				PipelineName: &name,
+				PipelineName: name,
 				MaxResults:   lo.ToPtr(int32(1)),
 			})
+
 		if err != nil {
 			return err
 		}
-		var payload *types.PipelineExecutionSummary
-		if len(output.PipelineExecutionSummaries) > 0 {
-			payload = &output.PipelineExecutionSummaries[0]
+
+		if len(pipelineExeuctions.PipelineExecutionSummaries) == 0 {
+			return pipelineExecutionMsg{}
 		}
+
+		summary := &pipelineExeuctions.PipelineExecutionSummaries[0]
+		actionExecutions, err := client.ListActionExecutions(
+			context.TODO(),
+			&codepipeline.ListActionExecutionsInput{
+				PipelineName: name,
+				Filter: &types.ActionExecutionFilter{
+					PipelineExecutionId: summary.PipelineExecutionId,
+				},
+			})
+
+		if err != nil {
+			return err
+		}
+
 		return pipelineExecutionMsg{
-			payload: payload,
+			summary: summary,
+			actions: lo.KeyBy(
+				actionExecutions.ActionExecutionDetails,
+				func(a types.ActionExecutionDetail) string {
+					return *a.ActionName
+				},
+			),
 		}
 	}
 }
 
 type pipelineExecutionMsg struct {
-	payload *types.PipelineExecutionSummary
+	summary *types.PipelineExecutionSummary
+	actions map[string]types.ActionExecutionDetail
 }

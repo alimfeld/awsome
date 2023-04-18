@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/service/codepipeline/types"
 	"github.com/samber/lo"
 )
 
@@ -13,6 +14,10 @@ func (m model) View() string {
 	}
 
 	var sb strings.Builder
+
+	if m.execution.summary != nil {
+		sb.WriteString(fmt.Sprintf(">> %s <<\n", m.execution.summary.Status))
+	}
 
 	lo.ForEach(
 		m.pipeline.stages,
@@ -27,7 +32,11 @@ func (m model) View() string {
 								lo.Map(
 									g.actions,
 									func(a action, _ int) string {
-										return a.name
+										return fmt.Sprintf(
+											"%s %s",
+											m.getActionStatus(a.name),
+											a.name,
+										)
 									},
 								),
 								"\n",
@@ -40,4 +49,22 @@ func (m model) View() string {
 	)
 
 	return sb.String()
+}
+
+func (m model) getActionStatus(action string) string {
+	execution, ok := m.execution.actions[action]
+	if !ok {
+		return "❓"
+	}
+	switch execution.Status {
+	case types.ActionExecutionStatusInProgress:
+		return "🔄"
+	case types.ActionExecutionStatusSucceeded:
+		return "✅"
+	case types.ActionExecutionStatusFailed:
+		return "❌"
+	case types.ActionExecutionStatusAbandoned:
+		return "❓"
+	}
+	return "❓"
 }
