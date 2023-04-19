@@ -40,7 +40,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, core.PopModelCmd()
 			case "enter":
 				return m, core.PushModelCmd(
-					pr.New(m.client, pr.Context{
+					pr.New(pr.Context{
+						Client:      m.client,
 						Repository:  m.context.Repository,
 						PullRequest: m.pr(),
 					}),

@@ -8,13 +8,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m model) getDiffCmd() tea.Cmd {
+func (c Context) getDifferencesCmd() tea.Cmd {
 	return func() tea.Msg {
-		targets := m.context.PullRequest.PullRequestTargets[0]
-		output, err := m.client.GetDifferences(
+		targets := c.PullRequest.PullRequestTargets[0]
+		output, err := c.Client.GetDifferences(
 			context.TODO(),
 			&codecommit.GetDifferencesInput{
-				RepositoryName:        m.context.Repository.RepositoryName,
+				RepositoryName:        c.Repository.RepositoryName,
 				AfterCommitSpecifier:  targets.SourceReference,
 				BeforeCommitSpecifier: targets.DestinationReference,
 			},
@@ -22,33 +22,33 @@ func (m model) getDiffCmd() tea.Cmd {
 		if err != nil {
 			return err
 		}
-		return getDiffMsg{
+		return differencesMsg{
 			differences: output.Differences,
 		}
 	}
 }
 
-type getDiffMsg struct {
+type differencesMsg struct {
 	differences []types.Difference
 }
 
-func (m model) getCommentsCmd() tea.Cmd {
+func (c Context) getCommentsCmd() tea.Cmd {
 	return func() tea.Msg {
-		output, err := m.client.GetCommentsForPullRequest(
+		output, err := c.Client.GetCommentsForPullRequest(
 			context.TODO(),
 			&codecommit.GetCommentsForPullRequestInput{
-				PullRequestId: m.context.PullRequest.PullRequestId,
+				PullRequestId: c.PullRequest.PullRequestId,
 			},
 		)
 		if err != nil {
 			return err
 		}
-		return getCommentsMsg{
+		return commentsMsg{
 			comments: output.CommentsForPullRequestData,
 		}
 	}
 }
 
-type getCommentsMsg struct {
+type commentsMsg struct {
 	comments []types.CommentsForPullRequest
 }

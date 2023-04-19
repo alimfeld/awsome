@@ -46,7 +46,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						branches.Context{Repository: m.repo()},
 					),
 					*repo.RepositoryName)
-			case "p":
+			case "enter":
 				repoName := m.repo().RepositoryName
 				return m, core.PushModelCmd(
 					prs.New(
