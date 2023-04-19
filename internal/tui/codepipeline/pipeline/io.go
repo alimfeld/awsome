@@ -9,33 +9,33 @@ import (
 	"github.com/samber/lo"
 )
 
-func getPipelineCmd(client *codepipeline.Client, name *string) tea.Cmd {
+func getPipelineDeclarationCmd(client *codepipeline.Client, pipelineName *string) tea.Cmd {
 	return func() tea.Msg {
 		output, err := client.GetPipeline(
 			context.TODO(),
 			&codepipeline.GetPipelineInput{
-				Name: name,
+				Name: pipelineName,
 			})
 		if err != nil {
 			return err
 		}
-		return pipelineMsg{
-			payload: output.Pipeline,
+		return pipelineDeclarationMsg{
+			pipelineDeclaration: output.Pipeline,
 		}
 	}
 }
 
-type pipelineMsg struct {
-	payload *types.PipelineDeclaration
+type pipelineDeclarationMsg struct {
+	pipelineDeclaration *types.PipelineDeclaration
 }
 
-func getPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cmd {
+func getPipelineExecutionCmd(client *codepipeline.Client, pipelineName *string) tea.Cmd {
 	return func() tea.Msg {
 
-		pipelineExeuctions, err := client.ListPipelineExecutions(
+		output, err := client.ListPipelineExecutions(
 			context.TODO(),
 			&codepipeline.ListPipelineExecutionsInput{
-				PipelineName: name,
+				PipelineName: pipelineName,
 				MaxResults:   lo.ToPtr(int32(1)),
 			})
 
@@ -43,19 +43,31 @@ func getPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cmd 
 			return err
 		}
 
-		if len(pipelineExeuctions.PipelineExecutionSummaries) == 0 {
-			return pipelineExecutionMsg{
-				name: name,
-			}
+		var pipelineExecutionSummary *types.PipelineExecutionSummary
+		if len(output.PipelineExecutionSummaries) > 0 {
+			pipelineExecutionSummary = &output.PipelineExecutionSummaries[0]
 		}
 
-		summary := &pipelineExeuctions.PipelineExecutionSummaries[0]
-		actionExecutions, err := client.ListActionExecutions(
+		return pipelineExecutionMsg{
+			pipelineName,
+			pipelineExecutionSummary,
+		}
+	}
+}
+
+type pipelineExecutionMsg struct {
+	pipelineName             *string
+	pipelineExecutionSummary *types.PipelineExecutionSummary
+}
+
+func getActionExecutionsCmd(client *codepipeline.Client, pipelineName *string, pipelineExecutionId *string) tea.Cmd {
+	return func() tea.Msg {
+		output, err := client.ListActionExecutions(
 			context.TODO(),
 			&codepipeline.ListActionExecutionsInput{
-				PipelineName: name,
+				PipelineName: pipelineName,
 				Filter: &types.ActionExecutionFilter{
-					PipelineExecutionId: summary.PipelineExecutionId,
+					PipelineExecutionId: pipelineExecutionId,
 				},
 			})
 
@@ -63,23 +75,25 @@ func getPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cmd 
 			return err
 		}
 
-		return pipelineExecutionMsg{
-			name:    name,
-			summary: summary,
-			actions: lo.KeyBy(
-				actionExecutions.ActionExecutionDetails,
-				func(a types.ActionExecutionDetail) string {
-					return *a.ActionName
-				},
-			),
+		actionsExecutionDetails := lo.KeyBy(
+			output.ActionExecutionDetails,
+			func(a types.ActionExecutionDetail) string {
+				return *a.ActionName
+			},
+		)
+
+		return actionExecutionsMsg{
+			pipelineName,
+			pipelineExecutionId,
+			actionsExecutionDetails,
 		}
 	}
 }
 
-type pipelineExecutionMsg struct {
-	name    *string
-	summary *types.PipelineExecutionSummary
-	actions map[string]types.ActionExecutionDetail
+type actionExecutionsMsg struct {
+	pipelineName            *string
+	pipelineExecutionId     *string
+	actionsExecutionDetails map[string]types.ActionExecutionDetail
 }
 
 func startPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cmd {
@@ -93,12 +107,12 @@ func startPipelineExecutionCmd(client *codepipeline.Client, name *string) tea.Cm
 		if err != nil {
 			return err
 		}
-		return pipelineStartMsg{
-			id: output.PipelineExecutionId,
+		return pipelineExecutionStartMsg{
+			pipelineExecutionId: output.PipelineExecutionId,
 		}
 	}
 }
 
-type pipelineStartMsg struct {
-	id *string
+type pipelineExecutionStartMsg struct {
+	pipelineExecutionId *string
 }

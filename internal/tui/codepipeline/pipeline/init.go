@@ -5,9 +5,9 @@ import (
 )
 
 func (m model) Init() tea.Cmd {
-	name := m.context.Pipeline.Name
+	name := m.context.PipelineSummary.Name
 	return tea.Batch(
-		getPipelineCmd(m.client, name),
+		getPipelineDeclarationCmd(m.client, name),
 		getPipelineExecutionCmd(m.client, name),
 	)
 }

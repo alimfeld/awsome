@@ -1,7 +1,9 @@
 package pipeline
 
 import (
+	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline"
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline/types"
@@ -13,83 +15,88 @@ func New(client *codepipeline.Client, context Context) model {
 	m := model{
 		client:   client,
 		context:  context,
+		watch:    true,
 		viewport: viewport.New(0, 0),
 	}
 	return m
 }
 
 type model struct {
-	client  *codepipeline.Client
-	context Context
-	*pipeline
-	execution
-	viewport viewport.Model
+	client                   *codepipeline.Client
+	context                  Context
+	watch                    bool
+	viewport                 viewport.Model
+	pipelineDeclaration      *types.PipelineDeclaration
+	pipelineExecutionSummary *types.PipelineExecutionSummary
+	actionExecutionDetails   map[string]types.ActionExecutionDetail
 }
 
 type Context struct {
-	Pipeline types.PipelineSummary
+	PipelineSummary types.PipelineSummary
 }
 
-type pipeline struct {
-	name   string
-	stages []stage
-}
+func (m model) render() string {
+	if m.pipelineDeclaration == nil {
+		return ""
+	}
 
-type stage struct {
-	name   string
-	groups []group
-}
+	var sb strings.Builder
 
-type group struct {
-	order   int
-	actions []action
-}
+	lo.ForEach(
+		m.pipelineDeclaration.Stages,
+		func(s types.StageDeclaration, _ int) {
 
-type action struct {
-	name string
-}
+			sb.WriteString(fmt.Sprintf("\n# %s\n", *s.Name))
 
-type execution struct {
-	summary *types.PipelineExecutionSummary
-	actions map[string]types.ActionExecutionDetail
-}
+			actionsByRunOrder := lo.GroupBy(s.Actions,
+				func(action types.ActionDeclaration) int {
+					return int(*action.RunOrder)
+				},
+			)
+			var runOrders []int
+			for r := range actionsByRunOrder {
+				runOrders = append(runOrders, r)
+			}
+			sort.Ints(runOrders)
 
-func (m *model) setPipeline(p types.PipelineDeclaration) {
-	m.pipeline = &pipeline{
-		name: *p.Name,
-		stages: lo.Map(
-			p.Stages,
-			func(s types.StageDeclaration, _ int) stage {
-				actionsByRunOrder := lo.GroupBy(s.Actions,
-					func(action types.ActionDeclaration) int {
-						return int(*action.RunOrder)
-					},
-				)
-				var runOrders []int
-				for r := range actionsByRunOrder {
-					runOrders = append(runOrders, r)
-				}
-				sort.Ints(runOrders)
-				return stage{
-					name: *s.Name,
-					groups: lo.Map(
-						runOrders,
-						func(runOrder int, _ int) group {
-							return group{
-								order: runOrder,
-								actions: lo.Map(
+			lo.ForEach(
+				runOrders,
+				func(runOrder int, _ int) {
+					sb.WriteString(
+						fmt.Sprintf("\n%s\n",
+							strings.Join(
+								lo.Map(
 									actionsByRunOrder[runOrder],
-									func(a types.ActionDeclaration, _ int) action {
-										return action{
-											name: *a.Name,
-										}
+									func(a types.ActionDeclaration, _ int) string {
+										return fmt.Sprintf(
+											"%s %s",
+											renderActionStatus(m.actionExecutionDetails[*a.Name].Status),
+											*a.Name,
+										)
 									},
 								),
-							}
-						},
-					),
-				}
-			},
-		),
+								"\n",
+							),
+						),
+					)
+				},
+			)
+		},
+	)
+
+	return sb.String()
+}
+
+func renderActionStatus(status types.ActionExecutionStatus) string {
+	switch status {
+	case types.ActionExecutionStatusInProgress:
+		return ">"
+	case types.ActionExecutionStatusAbandoned:
+		return "_"
+	case types.ActionExecutionStatusSucceeded:
+		return "✅"
+	case types.ActionExecutionStatusFailed:
+		return "❌"
 	}
+	return " "
 }

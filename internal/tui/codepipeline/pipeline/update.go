@@ -9,43 +9,66 @@ import (
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case pipelineMsg:
-		m.setPipeline(*msg.payload)
+
+	case pipelineDeclarationMsg:
+		m.pipelineDeclaration = msg.pipelineDeclaration
 		m.viewport.SetContent(m.render())
 		return m, nil
+
 	case pipelineExecutionMsg:
-		if msg.name != m.context.Pipeline.Name {
+		if msg.pipelineName != m.context.PipelineSummary.Name {
 			// the msg doesn't target this pipeline
 			return m, nil
 		}
-		m.execution = execution{
-			msg.summary,
-			msg.actions,
+
+		var cmds []tea.Cmd
+
+		if m.pipelineExecutionSummary == nil ||
+			m.pipelineExecutionSummary.PipelineExecutionId != msg.pipelineExecutionSummary.PipelineExecutionId ||
+			m.pipelineExecutionSummary.LastUpdateTime != msg.pipelineExecutionSummary.LastUpdateTime {
+			m.pipelineExecutionSummary = msg.pipelineExecutionSummary
+			m.viewport.SetContent(m.render())
+			cmds = append(cmds, getActionExecutionsCmd(m.client, msg.pipelineName, msg.pipelineExecutionSummary.PipelineExecutionId))
 		}
+
+		if m.watch {
+			cmds = append(cmds, tea.Tick(
+				5*time.Second,
+				func(t time.Time) tea.Msg {
+					return getPipelineExecutionCmd(
+						m.client,
+						m.context.PipelineSummary.Name,
+					)()
+				},
+			))
+
+		}
+
+		return m, tea.Batch(cmds...)
+
+	case actionExecutionsMsg:
+		m.actionExecutionDetails = msg.actionsExecutionDetails
 		m.viewport.SetContent(m.render())
-		return m, tea.Tick(
-			5*time.Second,
-			func(t time.Time) tea.Msg {
-				return getPipelineExecutionCmd(
-					m.client,
-					m.context.Pipeline.Name,
-				)()
-			},
-		)
+		return m, nil
+
 	case core.BodySizeMsg:
 		m.viewport.Width = msg.Width
-		m.viewport.Height = msg.Height
+		m.viewport.Height = msg.Height - 1
+
 	case tea.KeyMsg:
 		switch msg.String() {
+
 		case "esc":
 			return m, core.PopModelCmd()
+
 		case "r":
 			return m, startPipelineExecutionCmd(
 				m.client,
-				m.context.Pipeline.Name,
+				m.context.PipelineSummary.Name,
 			)
 		}
 	}
+
 	var cmd tea.Cmd
 	m.viewport, cmd = m.viewport.Update(msg)
 	return m, cmd

@@ -2,73 +2,39 @@ package pipeline
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline/types"
-	"github.com/samber/lo"
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (m model) View() string {
-	return m.viewport.View()
-}
 
-func (m model) render() string {
-	if m.pipeline == nil {
-		return ""
+	var status types.PipelineExecutionStatus
+	statusStyle := lipgloss.NewStyle().AlignHorizontal(lipgloss.Center).Width(m.viewport.Width)
+
+	if m.pipelineExecutionSummary == nil {
+		status = ""
+	} else {
+		status = m.pipelineExecutionSummary.Status
+		switch status {
+		case types.PipelineExecutionStatusSucceeded:
+			statusStyle = statusStyle.
+				Background(lipgloss.Color("10")).
+				Foreground(lipgloss.Color("0"))
+		case types.PipelineExecutionStatusFailed:
+			statusStyle = statusStyle.
+				Background(lipgloss.Color("9")).
+				Foreground(lipgloss.Color("0"))
+		case types.PipelineExecutionStatusInProgress:
+			statusStyle = statusStyle.
+				Background(lipgloss.Color("11")).
+				Foreground(lipgloss.Color("0"))
+		}
 	}
 
-	var sb strings.Builder
-
-	if m.execution.summary != nil {
-		sb.WriteString(fmt.Sprintf(">> %s <<\n", m.execution.summary.Status))
-	}
-
-	lo.ForEach(
-		m.pipeline.stages,
-		func(s stage, _ int) {
-			sb.WriteString(fmt.Sprintf("\n# %s\n", s.name))
-			lo.ForEach(
-				s.groups,
-				func(g group, _ int) {
-					sb.WriteString(
-						fmt.Sprintf("\n%s\n",
-							strings.Join(
-								lo.Map(
-									g.actions,
-									func(a action, _ int) string {
-										return fmt.Sprintf(
-											"%s %s",
-											m.getActionStatus(a.name),
-											a.name,
-										)
-									},
-								),
-								"\n",
-							),
-						),
-					)
-				},
-			)
-		},
+	return lipgloss.JoinVertical(
+		lipgloss.Position(lipgloss.Left),
+		statusStyle.Render(fmt.Sprintf(">> %s <<", status)),
+		m.viewport.View(),
 	)
-
-	return sb.String()
-}
-
-func (m model) getActionStatus(action string) string {
-	execution, ok := m.execution.actions[action]
-	if !ok {
-		return "❓"
-	}
-	switch execution.Status {
-	case types.ActionExecutionStatusInProgress:
-		return "🔄"
-	case types.ActionExecutionStatusSucceeded:
-		return "✅"
-	case types.ActionExecutionStatusFailed:
-		return "❌"
-	case types.ActionExecutionStatusAbandoned:
-		return "❓"
-	}
-	return "❓"
 }
