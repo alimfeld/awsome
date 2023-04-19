@@ -11,6 +11,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case pipelineMsg:
 		m.setPipeline(*msg.payload)
+		m.viewport.SetContent(m.render())
 		return m, nil
 	case pipelineExecutionMsg:
 		if msg.name != m.context.Pipeline.Name {
@@ -21,6 +22,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			msg.summary,
 			msg.actions,
 		}
+		m.viewport.SetContent(m.render())
 		return m, tea.Tick(
 			5*time.Second,
 			func(t time.Time) tea.Msg {
@@ -31,7 +33,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			},
 		)
 	case core.BodySizeMsg:
-		return m, nil
+		m.viewport.Width = msg.Width
+		m.viewport.Height = msg.Height
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
@@ -43,5 +46,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			)
 		}
 	}
-	return m, nil
+	var cmd tea.Cmd
+	m.viewport, cmd = m.viewport.Update(msg)
+	return m, cmd
 }

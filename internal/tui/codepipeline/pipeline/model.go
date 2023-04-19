@@ -5,13 +5,15 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline"
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline/types"
+	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/samber/lo"
 )
 
 func New(client *codepipeline.Client, context Context) model {
 	m := model{
-		client:  client,
-		context: context,
+		client:   client,
+		context:  context,
+		viewport: viewport.New(0, 0),
 	}
 	return m
 }
@@ -21,6 +23,7 @@ type model struct {
 	context Context
 	*pipeline
 	execution
+	viewport viewport.Model
 }
 
 type Context struct {

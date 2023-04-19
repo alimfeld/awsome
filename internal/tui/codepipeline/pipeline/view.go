@@ -9,8 +9,12 @@ import (
 )
 
 func (m model) View() string {
+	return m.viewport.View()
+}
+
+func (m model) render() string {
 	if m.pipeline == nil {
-		return "loading..."
+		return ""
 	}
 
 	var sb strings.Builder
