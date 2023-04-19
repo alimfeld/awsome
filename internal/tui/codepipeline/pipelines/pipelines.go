@@ -87,7 +87,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, core.PopModelCmd()
 			case "enter":
 				p := m.pipeline()
-				return m, core.PushModelCmd(pipeline.New(m.client, pipeline.Context{PipelineSummary: p}), *p.Name)
+				return m, core.PushModelCmd(pipeline.New(
+					pipeline.Context{
+						Client:          m.client,
+						PipelineSummary: p,
+					},
+				), *p.Name)
 			}
 		}
 	}
