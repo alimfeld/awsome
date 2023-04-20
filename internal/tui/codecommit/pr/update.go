@@ -2,11 +2,13 @@ package pr
 
 import (
 	"awsome/internal/core"
-	"strings"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/codecommit/types"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/hexops/gotextdiff"
+	"github.com/hexops/gotextdiff/myers"
 	"github.com/samber/lo"
 )
 
@@ -92,31 +94,29 @@ func (m *model) updateSelectedDifference() []tea.Cmd {
 }
 
 func (m *model) updateViewport() {
-	var sb strings.Builder
-	d := m.list.SelectedItem().(item).difference
-	if d.BeforeBlob != nil {
-		sb.WriteString("Before:\n")
-		blob := m.blobsCache[*d.BeforeBlob.BlobId]
-		if blob != nil {
-			sb.WriteString(string(blob))
+	var before, after string
+	if m.selectedDifference.BeforeBlob != nil {
+		blob := m.blobsCache[*m.selectedDifference.BeforeBlob.BlobId]
+		if blob == nil {
+			m.viewport.SetContent("")
+			return
 		}
-		sb.WriteString("\n\n")
+		before = string(blob)
 	}
-	if d.AfterBlob != nil {
-		sb.WriteString("After:\n")
-		blob := m.blobsCache[*d.AfterBlob.BlobId]
-		if blob != nil {
-			sb.WriteString(string(blob))
+	if m.selectedDifference.AfterBlob != nil {
+		blob := m.blobsCache[*m.selectedDifference.AfterBlob.BlobId]
+		if blob == nil {
+			m.viewport.SetContent("")
+			return
 		}
-		sb.WriteString("\n")
+		after = string(blob)
 	}
-	m.viewport.SetContent(sb.String())
+	edits := myers.ComputeEdits("", before, after)
+	diff := gotextdiff.ToUnified("before", "after", before, edits)
+	m.viewport.SetContent(fmt.Sprint(diff))
 }
 
 func (m model) isBlobOfSelectedDifference(id string) bool {
-	if m.selectedDifference == nil {
-		return false
-	}
 	return m.selectedDifference.AfterBlob != nil &&
 		*m.selectedDifference.AfterBlob.BlobId == id ||
 		m.selectedDifference.BeforeBlob != nil &&

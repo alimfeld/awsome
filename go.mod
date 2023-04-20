@@ -10,6 +10,7 @@ require (
 	github.com/charmbracelet/bubbles v0.15.0
 	github.com/charmbracelet/bubbletea v0.23.2
 	github.com/charmbracelet/lipgloss v0.6.0
+	github.com/hexops/gotextdiff v1.0.3
 	github.com/samber/lo v1.38.1
 )
 
