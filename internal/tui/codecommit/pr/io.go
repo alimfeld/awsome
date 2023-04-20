@@ -52,3 +52,27 @@ func (c Context) getCommentsCmd() tea.Cmd {
 type commentsMsg struct {
 	comments []types.CommentsForPullRequest
 }
+
+func (c Context) getBlobCmd(id *string) tea.Cmd {
+	return func() tea.Msg {
+		output, err := c.Client.GetBlob(
+			context.TODO(),
+			&codecommit.GetBlobInput{
+				BlobId:         id,
+				RepositoryName: c.Repository.RepositoryName,
+			},
+		)
+		if err != nil {
+			return err
+		}
+		return blobMsg{
+			id:      *id,
+			content: output.Content,
+		}
+	}
+}
+
+type blobMsg struct {
+	id      string
+	content []byte
+}

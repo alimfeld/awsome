@@ -9,11 +9,14 @@ import (
 
 func New(context Context) model {
 	list := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
+	list.SetShowHelp(false)
+	list.SetShowTitle(false)
 	list.Title = "Differences"
 	m := model{
-		context:  context,
-		list:     list,
-		viewport: viewport.New(0, 0),
+		context:    context,
+		list:       list,
+		viewport:   viewport.New(0, 0),
+		blobsCache: make(map[string][]byte),
 	}
 	return m
 }
@@ -25,11 +28,14 @@ type Context struct {
 }
 
 type model struct {
-	context     Context
-	differences []types.Difference
-	comments    []types.CommentsForPullRequest
-	list        list.Model
-	viewport    viewport.Model
+	context  Context
+	list     list.Model
+	viewport viewport.Model
+
+	differences        []types.Difference
+	comments           []types.CommentsForPullRequest
+	blobsCache         map[string][]byte
+	selectedDifference *types.Difference
 }
 
 type item struct {
