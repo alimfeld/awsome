@@ -81,10 +81,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetSize(msg.Width, msg.Height)
 		return m, nil
 	case tea.KeyMsg:
-		if m.list.FilterState() != list.Filtering {
+		if m.list.FilterState() == list.Unfiltered {
 			switch msg.String() {
 			case "esc":
 				return m, core.PopModelCmd()
+			}
+		}
+		if m.list.FilterState() != list.Filtering {
+			switch msg.String() {
 			case "enter":
 				p := m.pipeline()
 				return m, core.PushModelCmd(pipeline.New(
