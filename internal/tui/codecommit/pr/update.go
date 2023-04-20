@@ -33,10 +33,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case core.BodySizeMsg:
-		listWidth := msg.Width / 3
-		m.list.SetSize(listWidth, msg.Height)
-		m.viewport.Width = msg.Width - listWidth
-		m.viewport.Height = msg.Height
+		listHeight := msg.Height / 4
+		m.list.SetSize(msg.Width, listHeight)
+		m.viewport.Width = msg.Width
+		m.viewport.Height = msg.Height - listHeight
 		return m, nil
 
 	case tea.KeyMsg:
